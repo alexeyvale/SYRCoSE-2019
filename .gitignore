@@ -1,0 +1,10 @@
+*.lst
+*.back
+*.suo
+*.user
+**/.vs/
+**/bin/
+**/obj/
+**/packages/
+
+_Experiments/Parsing/_Results/

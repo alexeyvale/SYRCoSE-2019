@@ -1,0 +1,24 @@
+COMMENT			: '<!--' .*? '-->'
+DOCTYPE_DECL	: '<!' (DOCTYPE_DECL|STRING|.)*? '>'
+CDATA			: '<![CDATA[' .*? ']]>'
+PROCESS_INSTR	: %left ('<?'|'<?xml')	%right '?>'
+
+ID		: [_a-zA-Z][-._a-zA-Z0-9]*
+STRING	: '"' ~[<"]*? '"' | '\'' ~[<']*? '\''
+
+file		=	xml_prolog? (tag|Any)*
+xml_prolog	=	'<?xml' attribute* '?>'
+tag			=	'<' name attribute* ('>' (tag|Any)* '</' name '>' | '/>')
+attribute	=	name '=' STRING
+name		=	ID (':' ID)*
+
+%%
+
+%parsing {
+	skip COMMENT DOCTYPE_DECL CDATA STRING
+	start file
+}
+
+%nodes {
+	leaf name
+}
