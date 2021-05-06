@@ -488,8 +488,8 @@ namespace " + @namespace + @"
 				node = newNode;
 			}
 			
-			foreach (var child in node.Children)
-				child.Accept(this);
+			for (var i = 0; i < node.Children.Count; ++i)
+                node.Children[i].Accept(this);
 		}
 	}
 	
