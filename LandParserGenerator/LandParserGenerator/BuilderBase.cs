@@ -493,7 +493,26 @@ namespace " + @namespace + @"
 		}
 	}
 	
-	public class RuleNode: Node
+	public class TypedNode: Node
+	{
+		public IEnumerable<TypedNode> TypedChildren 
+		{ 
+			get 
+			{
+				return Children.Select(e => (TypedNode)e);
+			}
+		}
+
+		public TypedNode(string symbol, LocalOptions opts = null): base(symbol, opts) {}
+		public TypedNode(Node node): base(node) {}
+
+		public virtual void Accept(BaseTypedTreeVisitor visitor)
+		{
+			visitor.Visit(this);
+		}
+	}
+
+	public class RuleNode: TypedNode
 	{
 		public RuleNode(string symbol, LocalOptions opts = null): base(symbol, opts) {}
 		public RuleNode(Node node): base(node) {}
@@ -504,7 +523,7 @@ namespace " + @namespace + @"
 		}
 	}
 	
-	public class TokenNode: Node
+	public class TokenNode: TypedNode
 	{
 		public TokenNode(string symbol, LocalOptions opts = null): base(symbol, opts) {}
 		public TokenNode(Node node): base(node) {}
@@ -568,11 +587,17 @@ namespace " + @namespace + @"
 	}");
 
 			nodeClassesSource.AppendLine(@"
-	public class BaseTypedTreeVisitor: BaseTreeVisitor 
+	public class BaseTypedTreeVisitor 
 	{
+		public virtual void Visit(TypedNode node)
+		{
+			foreach (var child in node.TypedChildren)
+				child.Accept(this);
+		}
+
 		public virtual void Visit(RuleNode node)
 		{
-			foreach (var child in node.Children)
+			foreach (var child in node.TypedChildren)
 				child.Accept(this);
 		}
 
@@ -581,7 +606,7 @@ namespace " + @namespace + @"
 				nodeClassesSource.AppendLine(@"
 		public virtual void Visit(" + name + @"_node node)
 		{
-			foreach (var child in node.Children)
+			foreach (var child in node.TypedChildren)
 				child.Accept(this);
 		}");
 
@@ -590,7 +615,7 @@ namespace " + @namespace + @"
 					nodeClassesSource.AppendLine(@"
 		public virtual void Visit(" + alias + @"_node node)
 		{
-			foreach (var child in node.Children)
+			foreach (var child in node.TypedChildren)
 				child.Accept(this);
 		}");
 
